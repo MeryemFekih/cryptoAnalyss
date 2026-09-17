@@ -41,3 +41,17 @@ export async function getInfos(){
 
     }
 }
+
+// récupere l'historique d'une crypto
+export async function getHistoric(id){
+    try {
+        const response = await axios(`${BASE_HISTORY}/coins/${id}/market_chart`,{params:paramHistoric})
+        return response.data;
+
+    }catch(e){
+        console.log("erreur :",e);
+        return;
+
+    }
+
+}

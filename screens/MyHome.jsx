@@ -12,6 +12,9 @@ export function MyHome(){
       const [isLoading,setisLoading] = useState(false);
       const [allCryptos,setallcryptos] =useState([]);
       const [dataCryptos,setdataCryptos] = useState([]);
+      const [selectedCrypto,setselectedCrypto] = useState();
+
+
      
      
 
@@ -41,6 +44,7 @@ export function MyHome(){
   return (
     <ImageBackground style={{flex:1}} source={ImageBack} imageStyle={{opacity:0.5}}>
       <View style={{marginBottom:60}}/>
+      <TextInput style={{borderRadius:20,p}} placeholder='Entre votre crypto' i/>
       
       <FlatList
        data={dataCryptos}

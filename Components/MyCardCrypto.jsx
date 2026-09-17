@@ -31,7 +31,7 @@ return(
     
     style={{flexDirection:"row",
         justifyContent:"space-between",
-        backgroundColor:"transparent",
+        
         borderRadius:20,
         marginBottom:10,
         marginHorizontal:10,
@@ -41,7 +41,7 @@ return(
         <View>
             <Image source={{uri:crypto.logo}} style={{height:40,width:40,marginBottom:10}}/>
            
-                < Text style={{marginRight:10}}>{crypto.name} {crypto.symbol.toUpperCase()}</Text>
+                < Text style={{marginRight:10,color:"white"}}>{crypto.name} {crypto.symbol.toUpperCase()}</Text>
 
             
             
