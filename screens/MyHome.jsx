@@ -1,63 +1,80 @@
-
-import { FlatList, ImageBackground, StyleSheet, Text, TextInput, View } from 'react-native';
-import ImageBack from '../assets/background.png';
+import { FlatList, StatusBar, StyleSheet, Text, TextInput, View, SafeAreaView } from 'react-native';
 import { useEffect, useState } from 'react';
 import { getInfos } from '../services/apiCrypto';
 import { MyLoading } from '../Components/MyLoading';
 import { MyCardCrypto } from '../Components/MyCardCrypto';
-import { useNavigation } from '@react-navigation/native';
 
-export function MyHome(){
-    
-      const [isLoading,setisLoading] = useState(false);
-      const [allCryptos,setallcryptos] =useState([]);
-      const [dataCryptos,setdataCryptos] = useState([]);
-      const [selectedCrypto,setselectedCrypto] = useState();
+export function MyHome() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [allCryptos, setAllCryptos] = useState([]);
+  const [dataCryptos, setDataCryptos] = useState([]);
+  const [search, setSearch] = useState("");
 
+  useEffect(() => {
+    initialisation();
+  }, []);
 
-     
-     
+  useEffect(() => {
+    if (search.trim() === "") {
+      setDataCryptos(allCryptos);
+    } else {
+      const filtered = allCryptos.filter((crypto) =>
+        crypto.name.toLowerCase().includes(search.toLowerCase()) ||
+        crypto.symbol.toLowerCase().includes(search.toLowerCase())
+      );
+      setDataCryptos(filtered);
+    }
+  }, [search, allCryptos]);
 
-        useEffect(()=>{
-          initialiasation();
-      
-        },[]);
+  async function initialisation() {
+    const data = await getInfos();
+    setAllCryptos(data);
+    setDataCryptos(data);
+    setIsLoading(false);
+  }
 
-        useEffect(()=>{
+  if (isLoading) {
+    return <MyLoading />;
+  }
 
-
-        },[])
-      
-        async function initialiasation(){
-          const data = await getInfos();
-          setisLoading(true);
-          setallcryptos(data);
-          setdataCryptos(data);
-          console.log(data);
-      
-        }
-
-
-      if(!isLoading){
-    return <MyLoading/>
-  }else {
   return (
-    <ImageBackground style={{flex:1}} source={ImageBack} imageStyle={{opacity:0.5}}>
-      <View style={{marginBottom:60}}/>
-      <TextInput style={{borderRadius:20}} placeholder='Entre votre crypto' i/>
-      
-      <FlatList
-       data={dataCryptos}
-      
-       keyExtractor={(item)=> item.id}
-        renderItem={({item})=>{
-          return <MyCardCrypto crypto={item}/>
-        }}
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" />
 
+      <Text style={styles.title}>Cryptomonnaies</Text>
+
+      <View style={styles.searchWrapper}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Rechercher une crypto"
+          placeholderTextColor="#8A93A6"
+          value={search}
+          onChangeText={setSearch}
+        />
+      </View>
+
+      <FlatList
+        data={dataCryptos}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        renderItem={({ item }) => <MyCardCrypto crypto={item} />}
+        ListEmptyComponent={<Text style={styles.empty}>Aucun résultat</Text>}
       />
-     
-   
-    </ImageBackground>
+    </SafeAreaView>
   );
 }
-}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#0B0E14", paddingHorizontal: 20, paddingTop: 16 },
+  title: { fontSize: 26, fontWeight: "800", color: "#F2F4F8", marginBottom: 16 },
+  searchWrapper: { marginBottom: 16 },
+  searchInput: {
+    backgroundColor: "#151A24",
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: "#F2F4F8",
+  },
+  empty: { color: "#8A93A6", textAlign: "center", marginTop: 40 },
+});

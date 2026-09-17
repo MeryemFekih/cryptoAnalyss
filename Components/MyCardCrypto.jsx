@@ -1,64 +1,75 @@
 import { useNavigation } from "@react-navigation/native";
-import { LinearGradient } from "expo-linear-gradient";
-import { Image, Text,TouchableOpacity,View } from "react-native";
-export function MyCardCrypto({crypto}){
-    const nav = useNavigation();
-     const isPositif = crypto.percent >=0;
-     const priceLisible = (crypto.price ?? 0).toLocaleString("fr-FR",{
-        minimumFractionDigits:0,
-        maximumFractionDigits : 2,
+import { FontAwesome } from "@expo/vector-icons";
+import { Image, Text, TouchableOpacity, View, StyleSheet } from "react-native";
 
-     });
-     const lisibleNombre =(crypto.volume ?? 0).toLocaleString("fr-FR",{
-        minimumFractionDigits : 0,
-        maximumFractionDigits : 0
-    });
+export function MyCardCrypto({ crypto }) {
+  const nav = useNavigation();
+  const isPositif = crypto.percent >= 0;
+  const accent = isPositif ? "#2ED9A3" : "#FF5C7A";
 
+  const priceLisible = (crypto.price ?? 0).toLocaleString("fr-FR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
+  const lisibleNombre = (crypto.volume ?? 0).toLocaleString("fr-FR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+  const formatPercent = (crypto.percent ?? 0).toLocaleString("fr-FR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  });
 
-     const formatPercent =(crypto.percent ?? 0).toLocaleString("fr-FR",{
-        minimumFractionDigits : 0,
-        maximumFractionDigits : 2
-    });
-return(
-    <TouchableOpacity onPress={()=>{
-        nav.navigate("detail",{crypto:crypto});
-
-    }}>
-    <LinearGradient 
-    colors={["purple","blue","white"]}
-    start={{x:0,y:0}}
-    end={{x:1,y:1}}
-    
-    style={{flexDirection:"row",
-        justifyContent:"space-between",
-        
-        borderRadius:20,
-        marginBottom:10,
-        marginHorizontal:10,
-        padding:10,
-        
-        }}>
-        <View>
-            <Image source={{uri:crypto.logo}} style={{height:40,width:40,marginBottom:10}}/>
-           
-                < Text style={{marginRight:10,color:"white"}}>{crypto.name} {crypto.symbol.toUpperCase()}</Text>
-
-            
-            
-
+  return (
+    <TouchableOpacity onPress={() => nav.navigate("detail", { crypto: crypto })}>
+      <View style={styles.card}>
+        <View style={styles.left}>
+          <Image source={{ uri: crypto.logo }} style={styles.logo} />
+          <View>
+            <Text style={styles.name}>{crypto.name}</Text>
+            <Text style={styles.symbol}>{crypto.symbol?.toUpperCase()}</Text>
+          </View>
         </View>
-        <View style={{justifyContent:"center"}}>
-            <Text>{priceLisible} €</Text>
-           
-        <Text>{lisibleNombre}</Text>
-        <Text style={{color:(isPositif)?"green":"red"}}>{formatPercent} %</Text>
 
-
+        <View style={styles.right}>
+          <Text style={styles.price}>{priceLisible} €</Text>
+          <Text style={styles.volume}>Vol. {lisibleNombre}</Text>
+          <View style={[styles.badge, { backgroundColor: accent + "22" }]}>
+            <FontAwesome name={isPositif ? "caret-up" : "caret-down"} size={12} color={accent} />
+            <Text style={[styles.badgeText, { color: accent }]}>{formatPercent} %</Text>
+          </View>
         </View>
-     
-        
-        
-    </LinearGradient>
+      </View>
     </TouchableOpacity>
-)
+  );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#151A24",
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 10,
+    marginHorizontal: 10,
+  },
+  left: { flexDirection: "row", alignItems: "center", flex: 1 },
+  logo: { width: 40, height: 40, borderRadius: 20, marginRight: 12 },
+  name: { fontSize: 15, fontWeight: "700", color: "#F2F4F8" },
+  symbol: { fontSize: 12, color: "#8A93A6", marginTop: 2 },
+  right: { alignItems: "flex-end" },
+  price: { fontSize: 15, fontWeight: "700", color: "#F2F4F8" },
+  volume: { fontSize: 11, color: "#8A93A6", marginTop: 2 },
+  badge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    marginTop: 4,
+  },
+  badgeText: { fontSize: 11, fontWeight: "600" },
+});
