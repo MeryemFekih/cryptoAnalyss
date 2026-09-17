@@ -55,3 +55,23 @@ export async function getHistoric(id){
     }
 
 }
+
+export async function getDetails(id){
+try {
+    const response = await axios(`${BASE_HISTORY}/coins/${id}`)
+    const d = response.data;
+    return {
+        name: d.name,
+        symbol: d.symbol,
+        currentPrice: d.market_data.current_price.eur,
+        priceChange24h: d.market_data.price_change_percentage_24h,
+        volume24h: d.market_data.total_volume.eur,
+    };
+
+    }catch(e){
+console.log("erreur :",e);
+return;
+
+    } 
+}
+

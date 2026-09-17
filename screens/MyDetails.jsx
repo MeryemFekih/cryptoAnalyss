@@ -3,14 +3,14 @@ import background from "../assets/background.png"
 import { FontAwesome } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
-import { getHistoric } from "../services/apiCrypto";
+import { getHistoric, getDetails } from "../services/apiCrypto";
 import { LineChart } from "react-native-gifted-charts";
 
 export function MyDetails({route}){
     const crypt = route.params.crypto;
     const nav = useNavigation();
     const [dataTime,setdataTime]= useState([]);
-
+    const [details,setDetails] = useState([])
 
     useEffect(()=>{
         init();
@@ -36,13 +36,7 @@ export function MyDetails({route}){
 
         });
          setdataTime(resulat);
-
-        
-
-            
-            
-        
-
+         setDetails(await getDetails(crypt.id));
      }
  
     return(
@@ -74,7 +68,16 @@ export function MyDetails({route}){
             
             
             />
-
+             {details && (
+            <View style={{alignItems:"center", marginTop:10}}>
+                <Text style={{fontSize:16}}>{details.symbol?.toUpperCase()}</Text>
+                <Text style={{fontSize:20,fontWeight:"600"}}>{details.currentPrice} €</Text>
+                <Text style={{color: details.priceChange24h >= 0 ? "green" : "red"}}>
+                    {details.priceChange24h?.toFixed(2)} %
+                </Text>
+                <Text style={{fontSize:12}}>Volume 24h : {details.volume24h}</Text>
+            </View>
+        )}
            
             
 
