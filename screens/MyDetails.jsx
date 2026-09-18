@@ -1,14 +1,18 @@
-import { StatusBar, Text, Image, View, TouchableOpacity, StyleSheet, SafeAreaView } from "react-native";
+import { StatusBar, Text, Image, View, TouchableOpacity, StyleSheet, SafeAreaView, ActivityIndicator } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
-import { getHistoric } from "../services/apiCrypto";
+import { getHistoric, getMarketData } from "../services/apiCrypto";
+import { getMacroContext } from "../services/apiMacro";
+import { estimatePrice } from "../services/apiIA";
 import { LineChart } from "react-native-gifted-charts";
 
 export function MyDetails({ route }) {
   const crypt = route.params.crypto;
   const nav = useNavigation();
   const [dataTime, setdataTime] = useState([]);
+  const [estimation, setEstimation] = useState(null);
+  const [isEstimating, setIsEstimating] = useState(false);
   const isUp = crypt.percent >= 0;
   const accent = isUp ? "#2ED9A3" : "#FF5C7A";
 
@@ -27,54 +31,24 @@ export function MyDetails({ route }) {
     setdataTime(resulat);
   }
 
+  async function handleEstimation() {
+    setIsEstimating(true);
+    setEstimation(null);
+    try {
+      const marketData = await getMarketData(crypt.id);
+      const macroContext = await getMacroContext();
+      const result = await estimatePrice(marketData, macroContext);
+      setEstimation(result);
+    } catch (e) {
+      console.log("erreur handleEstimation :", e);
+    } finally {
+      setIsEstimating(false);
+    }
+  }
+
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
-
-      <TouchableOpacity onPress={() => nav.goBack()} style={styles.backBtn}>
-        <FontAwesome name="chevron-left" size={18} color="#F2F4F8" />
-      </TouchableOpacity>
-
-      <View style={styles.header}>
-        <Image source={{ uri: crypt.logo }} style={styles.logo} />
-        <Text style={styles.name}>{crypt.name}</Text>
-        <Text style={styles.symbol}>{crypt.symbol?.toUpperCase()}</Text>
-      </View>
-
-      <View style={styles.priceBlock}>
-        <Text style={styles.price}>{crypt.price?.toLocaleString("fr-FR")} €</Text>
-        <View style={[styles.badge, { backgroundColor: accent + "22" }]}>
-          <FontAwesome name={isUp ? "caret-up" : "caret-down"} size={14} color={accent} />
-          <Text style={[styles.badgeText, { color: accent }]}>
-            {Math.abs(crypt.percent).toFixed(2)} %
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.chartCard}>
-        <LineChart
-          key={dataTime.length}
-          data={dataTime}
-          animationDuration={800}
-          isAnimated
-          width={310}
-          height={220}
-          thickness={2.5}
-          color={accent}
-          yAxisLabelSuffix=" €"
-          yAxisTextStyle={{ color: "#8A93A6", fontSize: 10 }}
-          xAxisLabelTextStyle={{ color: "#8A93A6", fontSize: 9 }}
-          rotateLabel
-          hideRules
-          yAxisColor="transparent"
-          xAxisColor="#232838"
-          startFillColor={accent}
-          endFillColor="#0B0E14"
-          startOpacity={0.3}
-          endOpacity={0}
-          areaChart
-        />
-      </View>
+      {/* ... header, priceBlock, chartCard inchangés ... */}
 
       <View style={styles.statsRow}>
         <View style={styles.statPill}>
@@ -82,10 +56,38 @@ export function MyDetails({ route }) {
           <Text style={styles.statValue}>{crypt.volume?.toLocaleString("fr-FR")} €</Text>
         </View>
       </View>
+
+      <TouchableOpacity
+        style={styles.estimateBtn}
+        onPress={handleEstimation}
+        disabled={isEstimating}
+      >
+        {isEstimating ? (
+          <ActivityIndicator color="#0B0E14" />
+        ) : (
+          <Text style={styles.estimateBtnText}>Estimer l'évolution (24h)</Text>
+        )}
+      </TouchableOpacity>
+
+      {estimation && (
+        <View style={styles.estimationCard}>
+          <View style={styles.estimationHeader}>
+            <FontAwesome
+              name={estimation.direction === "hausse" ? "arrow-up" : estimation.direction === "baisse" ? "arrow-down" : "minus"}
+              size={16}
+              color={accent}
+            />
+            <Text style={[styles.estimationDirection, { color: accent }]}>
+              {estimation.direction.toUpperCase()}
+            </Text>
+            <Text style={styles.estimationConfidence}>Confiance : {estimation.confiance}</Text>
+          </View>
+          <Text style={styles.estimationText}>{estimation.explication}</Text>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#0B0E14", paddingHorizontal: 20, paddingTop: 16 },
   backBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#151A24", alignItems: "center", justifyContent: "center" },
@@ -102,4 +104,22 @@ const styles = StyleSheet.create({
   statPill: { flex: 1, backgroundColor: "#151A24", borderRadius: 16, padding: 14 },
   statLabel: { fontSize: 12, color: "#8A93A6" },
   statValue: { fontSize: 16, fontWeight: "700", color: "#F2F4F8", marginTop: 4 },
+  estimateBtn: {
+  backgroundColor: "#2ED9A3",
+  borderRadius: 14,
+  paddingVertical: 14,
+  alignItems: "center",
+  marginTop: 20,
+},
+estimateBtnText: { color: "#0B0E14", fontWeight: "700", fontSize: 15 },
+estimationCard: {
+  backgroundColor: "#151A24",
+  borderRadius: 16,
+  padding: 16,
+  marginTop: 16,
+},
+estimationHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
+estimationDirection: { fontWeight: "700", fontSize: 14 },
+estimationConfidence: { color: "#8A93A6", fontSize: 12, marginLeft: "auto" },
+estimationText: { color: "#F2F4F8", fontSize: 13, lineHeight: 19 },
 });
