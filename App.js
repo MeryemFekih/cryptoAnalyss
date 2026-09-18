@@ -1,37 +1,26 @@
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MyHome } from './screens/MyHome';
-import { MyDetails } from './screens/MyDetails';
+import MyDetails from './screens/MyDetails'; // ✅ sans accolades — export par défaut
 import { Mydashboard } from './screens/MyDashboard';
 
 export default function App() {
   const Stack = createNativeStackNavigator();
   const navTheme = {
     ...DefaultTheme,
-    colors : {
+    colors: {
       ...DefaultTheme.colors,
       background: "transparent"
     }
   }
 
   return (
-  <NavigationContainer theme={navTheme}>
-    <Stack.Navigator initialRouteName="home"  screenOptions={{headerShown:false,animation:"fade"}}>
-    <Stack.Screen name="home" component={MyHome}/>
-    <Stack.Screen name="detail" component={MyDetails}/>
-    <Stack.Screen name="dashboard" component={Mydashboard}/>
-
-    </Stack.Navigator>
-
-  </NavigationContainer>
+    <NavigationContainer theme={navTheme}>
+      <Stack.Navigator initialRouteName="home" screenOptions={{ headerShown: false, animation: "fade" }}>
+        <Stack.Screen name="home" component={MyHome} />
+        <Stack.Screen name="detail" component={MyDetails} />
+        <Stack.Screen name="dashboard" component={Mydashboard} />
+      </Stack.Navigator>
+    </NavigationContainer>
   )
-
-  
-
-
-  
-
-
 }
-
-

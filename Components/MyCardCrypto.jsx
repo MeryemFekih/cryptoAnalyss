@@ -21,7 +21,11 @@ export function MyCardCrypto({ crypto }) {
   });
 
   return (
-    <TouchableOpacity onPress={() => nav.navigate("detail", { crypto: crypto })}>
+    <TouchableOpacity
+      onPress={() =>
+        nav.navigate("detail", { id: crypto.id, logo: crypto.logo })
+      }
+    >
       <View style={styles.card}>
         <View style={styles.left}>
           <Image source={{ uri: crypto.logo }} style={styles.logo} />

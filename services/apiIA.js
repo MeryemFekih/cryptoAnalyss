@@ -4,7 +4,6 @@ import { GEMINI_API_KEY } from "@env";
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent";
 
-// Construit le prompt à partir des données crypto + contexte macro
 function buildPrompt(marketData, macroContext) {
   return `
 Tu es un analyste financier. Voici les données d'une cryptomonnaie :
@@ -19,7 +18,6 @@ Réponds uniquement selon le schéma JSON demandé, en français.
   `.trim();
 }
 
-// Appelle Gemini et renvoie une estimation structurée
 export async function estimatePrice(marketData, macroContext, retries = 2) {
   try {
     const response = await axios.post(

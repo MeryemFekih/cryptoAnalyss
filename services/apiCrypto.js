@@ -16,19 +16,12 @@ const params = {
 };
 
 
-// ========================================
-// PARAMETERS - HISTORIC DATA
-// ========================================
-
 const paramHistoric = {
   vs_currency: "eur",
   days: 7,
 };
 
 
-// ========================================
-// GET INFOS
-// ========================================
 
 export async function getInfos() {
   try {
@@ -62,15 +55,10 @@ export async function getInfos() {
 }
 
 
-// ========================================
-// GET DETAILS
-// ========================================
 
 export async function getDetails(id) {
   try {
-    const response = await axios(
-      `${BASE_HISTORY}/coins/${id}`
-    );
+    const response = await axios(`${BASE_HISTORY}/coins/${id}`);
 
     const d = response.data;
 
@@ -78,25 +66,30 @@ export async function getDetails(id) {
       name: d.name,
       symbol: d.symbol,
 
-      currentPrice:
-        d.market_data.current_price.eur,
+      currentPrice: d.market_data.current_price.eur,
+
+      priceChange1h:
+        d.market_data.price_change_percentage_1h_in_currency
+          ?.eur ?? 0,
 
       priceChange24h:
-        d.market_data.price_change_percentage_24h,
+        d.market_data.price_change_percentage_24h ?? 0,
+
+      priceChange7d:
+        d.market_data.price_change_percentage_7d ?? 0,
 
       volume24h:
-        d.market_data.total_volume.eur,
+        d.market_data.total_volume.eur ?? 0,
+
+      marketCap:
+        d.market_data.market_cap.eur ?? 0,
     };
   } catch (e) {
     console.log("Erreur getDetails :", e);
-    return;
+    return null;
   }
 }
 
-
-// ========================================
-// GET HISTORIC
-// ========================================
 
 export async function getHistoric(id, days = 7) {
   try {
@@ -117,10 +110,6 @@ export async function getHistoric(id, days = 7) {
   }
 }
 
-
-// ========================================
-// GET MARKET TRENDS
-// ========================================
 
 export async function getMarketTrends() {
   try {
@@ -151,10 +140,6 @@ export async function getMarketTrends() {
 }
 
 
-// ========================================
-// GET ANALYSIS DATA
-// ========================================
-
 export async function getAnalysisData(id) {
   try {
     const [details, historic] =
@@ -177,10 +162,6 @@ export async function getAnalysisData(id) {
   }
 }
 
-
-// ========================================
-// GET MARKET DATA FOR AI
-// ========================================
 
 export async function getMarketData(id) {
   try {
@@ -214,15 +195,12 @@ export async function getMarketData(id) {
       );
 
     return {
-      // Basic information
       name: data.name,
       symbol: data.symbol,
 
-      // Current price
       currentPrice:
         data.market_data.current_price.eur,
 
-      // Price changes
       priceChange24h:
         data.market_data
           .price_change_percentage_24h,
@@ -231,24 +209,19 @@ export async function getMarketData(id) {
         data.market_data
           .price_change_percentage_7d,
 
-      // Volume
       volume24h:
         data.market_data.total_volume.eur,
 
-      // Market cap
       marketCap:
         data.market_data.market_cap.eur,
 
-      // Historical prices
       priceHistory7d: prices,
 
-      // Highest price over 7 days
       high7d:
         prices.length > 0
           ? Math.max(...prices)
           : null,
 
-      // Lowest price over 7 days
       low7d:
         prices.length > 0
           ? Math.min(...prices)
