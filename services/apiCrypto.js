@@ -9,6 +9,7 @@ const params = {
   per_page: 250,
   sparkline: false,
   page: 1,
+  price_change_percentage: "1h,24h,7d"
 };
 
 export async function getInfos() {
@@ -22,6 +23,8 @@ export async function getInfos() {
       symbol: item.symbol,
       id: item.id,
       percent: item.price_change_percentage_24h,
+       percent1h: item.price_change_percentage_1h_in_currency, 
+    percent7d: item.price_change_percentage_7d_in_currency, 
     }));
     return data;
   } catch (e) {
@@ -56,6 +59,24 @@ export async function getHistoric(id, days = 7) {
     console.log("erreur :", e);
     return;
   }
+}
+
+
+
+export async function getMarketTrends() {
+    try {
+        const response = await axios(`${BASE_HISTORY}/global`)
+        const d = response.data.data;
+        return {
+            totalMarketCap: d.total_market_cap.eur,
+            marketCapChange24h: d.market_cap_change_percentage_24h_usd,
+            activeCryptocurrencies: d.active_cryptocurrencies,
+        };
+
+    } catch (e) {
+        console.log("erreur :", e);
+        return;
+    }
 }
 
 export async function getAnalysisData(id) {
