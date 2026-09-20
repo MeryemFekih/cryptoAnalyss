@@ -1,29 +1,18 @@
 import React, { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  SafeAreaView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
-  ScrollView,
-} from "react-native";
+import {ActivityIndicator,Image,SafeAreaView,StatusBar,Text,TouchableOpacity,View,ScrollView,} from "react-native";
+import { LineChart } from "react-native-gifted-charts";
 
-import { getDetails, getHistoric } from "../services/apiCrypto";
-import {
-  getMarketData,
-  getMacroContext,
-  estimatePrice,
-} from "../services/apiIA";
-
+import { getDetails, getHistoric, getMarketData } from "../services/apiCrypto";
+import { getMacroContext, estimatePrice } from "../services/apiIA";
 import { styles } from "../Components/mydetailsStyle";
+const ACCENT = "#2ED9A3"; 
 
 export default function MyDetails({ route, navigation }) {
   const { id, logo } = route.params;
 
   const [details, setDetails] = useState(null);
   const [historic, setHistoric] = useState(null);
+  const [dataTime, setDataTime] = useState([]);
   const [range, setRange] = useState("24h");
 
   const [estimation, setEstimation] = useState(null);
@@ -51,6 +40,16 @@ export default function MyDetails({ route, navigation }) {
       const days = range === "24h" ? 1 : range === "7j" ? 7 : 30;
       const data = await getHistoric(id, days);
       setHistoric(data);
+
+      const points = (data?.prices || []).map((p) => {
+        const jour = new Date(p[0]);
+        const label =
+          range === "24h"
+            ? jour.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+            : jour.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
+        return { label, value: Number(p[1]) };
+      });
+      setDataTime(points);
     } catch (error) {
       console.log("Erreur chargement historique :", error);
     }
@@ -90,7 +89,7 @@ export default function MyDetails({ route, navigation }) {
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="light-content" />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={ACCENT} />
           <Text style={styles.loadingText}>Chargement...</Text>
         </View>
       </SafeAreaView>
@@ -146,7 +145,7 @@ export default function MyDetails({ route, navigation }) {
             <Text
               style={[
                 styles.badgeText,
-                { color: isPositive ? "#4ADE80" : "#F87171" },
+                { color: isPositive ? ACCENT : "#F87171" },
               ]}
             >
               {formatPercent(priceChange24h)}
@@ -156,7 +155,7 @@ export default function MyDetails({ route, navigation }) {
           <Text
             style={[
               styles.trendText,
-              { color: isPositive ? "#4ADE80" : "#F87171" },
+              { color: isPositive ? ACCENT : "#F87171" },
             ]}
           >
             Tendance 24h : {isPositive ? "Hausse" : "Baisse"}
@@ -169,7 +168,7 @@ export default function MyDetails({ route, navigation }) {
             <Text
               style={[
                 styles.percentValue,
-                { color: priceChange1h >= 0 ? "#4ADE80" : "#F87171" },
+                { color: priceChange1h >= 0 ? ACCENT : "#F87171" },
               ]}
             >
               {formatPercent(priceChange1h)}
@@ -181,7 +180,7 @@ export default function MyDetails({ route, navigation }) {
             <Text
               style={[
                 styles.percentValue,
-                { color: priceChange24h >= 0 ? "#4ADE80" : "#F87171" },
+                { color: priceChange24h >= 0 ? ACCENT : "#F87171" },
               ]}
             >
               {formatPercent(priceChange24h)}
@@ -193,7 +192,7 @@ export default function MyDetails({ route, navigation }) {
             <Text
               style={[
                 styles.percentValue,
-                { color: priceChange7d >= 0 ? "#4ADE80" : "#F87171" },
+                { color: priceChange7d >= 0 ? ACCENT : "#F87171" },
               ]}
             >
               {formatPercent(priceChange7d)}
@@ -224,9 +223,9 @@ export default function MyDetails({ route, navigation }) {
           <View style={styles.estimationCard}>
             <View style={styles.estimationHeader}>
               <Text style={styles.estimationTitle}>🤖 Prédiction IA</Text>
-              {estimation.confidence && (
+              {estimation.confiance && (
                 <Text style={styles.estimationConfidence}>
-                  Confiance : {estimation.confidence}
+                  Confiance : {estimation.confiance}
                 </Text>
               )}
             </View>
@@ -248,8 +247,8 @@ export default function MyDetails({ route, navigation }) {
                     Prix estimé : {formatPrice(estimation.targetPrice)}
                   </Text>
                 )}
-                {estimation.explanation && (
-                  <Text style={styles.estimationText}>{estimation.explanation}</Text>
+                {estimation.explication && (
+                  <Text style={styles.estimationText}>{estimation.explication}</Text>
                 )}
               </>
             )}
@@ -274,14 +273,31 @@ export default function MyDetails({ route, navigation }) {
 
         <View style={styles.chartCard}>
           {!historic ? (
-            <ActivityIndicator size="small" />
-          ) : historic.prices?.length ? (
-            <View style={styles.chartPlaceholder}>
-              <Text style={styles.chartText}>📈 Graphique {range}</Text>
-              <Text style={styles.chartSubText}>
-                {historic.prices.length} points de données
-              </Text>
-            </View>
+            <ActivityIndicator size="small" color={ACCENT} />
+          ) : dataTime.length > 0 ? (
+            <LineChart
+              key={range + dataTime.length}
+              data={dataTime}
+              animationDuration={800}
+              isAnimated
+              width={310}
+              height={220}
+              thickness={2.5}
+              color={ACCENT}
+              yAxisLabelSuffix=" €"
+              yAxisTextStyle={{ color: "#8A93A6", fontSize: 10 }}
+              xAxisLabelTextStyle={{ color: "#8A93A6", fontSize: 9 }}
+              rotateLabel
+              hideRules
+              yAxisColor="transparent"
+              xAxisColor="#232838"
+              startFillColor={ACCENT}
+              endFillColor="#0B0E14"
+              startOpacity={0.3}
+              endOpacity={0}
+              areaChart
+              dataPointsColor={ACCENT}
+            />
           ) : (
             <Text style={styles.loadingText}>Pas de données disponibles.</Text>
           )}
